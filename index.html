@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Minha Página</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #080a06;
+    --surface: #0e110a;
+    --border:  rgba(180, 155, 60, 0.2);
+    --accent:  #c9a84c;
+    --accent2: #f0d080;
+    --text:    #e8e8d8;
+    --muted:   #6b6b50;
+    --green:   #2a3d1a;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  #topo-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.45;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  /* ── HEADER ── */
+  .header { text-align: center; margin-bottom: 32px; }
+
+  .header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: var(--text);
+  }
+  .header h1 span { color: var(--accent2); }
+
+  /* ── TOGGLE BUTTON ── */
+  .toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    padding: 11px 26px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    color: var(--accent2);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .toggle-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .toggle-btn:hover::before { opacity: 0.08; }
+  .toggle-btn:hover {
+    border-color: rgba(201, 168, 76, 0.5);
+    box-shadow: 0 0 24px rgba(201, 168, 76, 0.18);
+  }
+  .toggle-btn span { position: relative; z-index: 1; }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── PROFILE CARD ── */
+  #informacoes {
+    display: none;
+    width: 100%;
+    max-width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(201, 168, 76, 0.05),
+      0 32px 64px rgba(0, 0, 0, 0.7),
+      0 0 80px rgba(201, 168, 76, 0.07);
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  #informacoes.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .card-accent {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+  }
+
+  .card-body { padding: 32px; }
+
+  /* ── AVATAR ── */
+  .avatar-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center top;
+    border: 2px solid var(--accent);
+    box-shadow:
+      0 0 0 4px rgba(201, 168, 76, 0.1),
+      0 0 24px rgba(201, 168, 76, 0.2);
+  }
+
+  /* ── NAME ── */
+  .profile-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .profile-age {
+    font-size: 0.76rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+  .profile-age strong { color: var(--accent2); font-weight: 500; }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin-bottom: 24px;
+  }
+
+  .label {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  /* ── PILLS ── */
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+  .pill {
+    padding: 6px 14px;
+    background: rgba(201, 168, 76, 0.07);
+    border: 1px solid rgba(201, 168, 76, 0.2);
+    border-radius: 100px;
+    font-size: 0.8rem;
+    color: var(--text);
+  }
+
+  /* ── LIST ── */
+  .games-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 28px; }
+  .game-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+  .game-item::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent2);
+    flex-shrink: 0;
+  }
+
+  /* ── GIF ── */
+  .media-wrap {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .media-wrap img {
+    width: 100%;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .media-wrap:hover img { transform: scale(1.03); }
+
+  /* ── FRASE / IMAGE SECTION ── */
+  .img-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(201, 168, 76, 0.06);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--accent2);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 16px;
+  }
+  .img-toggle-btn:hover {
+    background: rgba(201, 168, 76, 0.12);
+    border-color: rgba(201, 168, 76, 0.4);
+  }
+  .img-toggle-btn .dot { flex-shrink: 0; }
+  .img-toggle-btn span { flex: 1; text-align: left; }
+
+  .img-reveal {
+    display: none;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    box-shadow: 0 0 30px rgba(201, 168, 76, 0.1);
+  }
+  .img-reveal.open { display: block; }
+  .img-reveal img {
+    width: 100%;
+    display: block;
+  }
+
+  /* ── INSTAGRAM ── */
+  .ig-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    transition: color 0.2s;
+  }
+  .ig-link:hover { color: var(--accent2); }
+  .ig-link svg { width: 16px; height: 16px; }
+
+  /* ── $ SYMBOL WATERMARK ── */
+  .money-tag {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    opacity: 0.5;
+    text-align: center;
+    margin-top: 20px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="topo-canvas"></canvas>
+
+<div class="page">
+
+  <div class="header">
+    <h1>Bem<span>-</span>vindo<span>!</span></h1>
+    <button class="toggle-btn" onclick="toggleInformacoes()">
+      <div class="dot"></div>
+      <span id="btnLabel">Ver Minhas Informações</span>
+    </button>
+  </div>
+
+  <div id="informacoes">
+    <div class="card-accent"></div>
+    <div class="card-body">
+
+      <!-- AVATAR -->
+      <div class="avatar-wrap">
+        <img class="avatar" src="123.jpg" alt="Foto de perfil">
+      </div>
+
+      <div class="profile-name">Lucas</div>
+      <div class="profile-age">Idade — <strong>17 anos</strong></div>
+
+      <div class="divider"></div>
+
+      <div class="label">Hobbies</div>
+      <div class="pills">
+        <span class="pill">*******</span>
+        <span class="pill">@##$$%¨&*</span>
+        <span class="pill">@#$%&****</span>
+      </div>
+
+      <div class="label">Sabor Fav</div>
+      <div class="games-list">
+        <div class="game-item">Money 💵</div>
+        <div class="game-item">Bitcoin ₿</div>
+        <div class="game-item">USDC 🪙</div>
+      </div>
+
+      <div class="media-wrap">
+        <img src="00.gif" alt="gif">
+      </div>
+
+      <div class="label">Frase</div>
+      <button class="img-toggle-btn" onclick="toggleImg()">
+        <div class="dot"></div>
+        <span id="imgBtnLabel">Ver Frase</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+      <div class="img-reveal" id="imgReveal">
+        <img src="images.jpg" alt="Frase">
+      </div>
+
+      <a href="https://www.instagram.com/lcaszz_" target="_blank" class="ig-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <circle cx="12" cy="12" r="5"/>
+          <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/>
+        </svg>
+        @lcaszz_
+      </a>
+
+      <div class="money-tag">$ — get money or die trying — $</div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ── TOPOGRAPHIC ANIMATION (gold theme) ── */
+  const canvas = document.getElementById('topo-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, t = 0;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function noise(x, y, z) {
+    return Math.sin(x * 0.6 + z) * Math.cos(y * 0.5 + z * 0.7)
+         + Math.sin(x * 0.3 - z * 0.4) * Math.sin(y * 0.8 + z * 0.3)
+         + Math.cos(x * 1.1 + y * 0.4 + z * 0.5) * 0.5;
+  }
+
+  function drawTopo() {
+    ctx.clearRect(0, 0, W, H);
+    const cols = 14, rows = 9, levels = 12;
+    const cw = W / cols, ch = H / rows;
+
+    for (let lvl = 0; lvl < levels; lvl++) {
+      const threshold = -1.8 + (lvl / levels) * 3.6;
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(201, 168, 76, ${0.05 + lvl * 0.011})`;
+      ctx.lineWidth = lvl % 4 === 0 ? 1.4 : 0.6;
+
+      for (let gy = 0; gy < rows; gy++) {
+        for (let gx = 0; gx < cols; gx++) {
+          const x0 = gx*cw, y0 = gy*ch, x1 = x0+cw, y1 = y0+ch;
+          const v00 = noise(gx/cols*4, gy/rows*4, t);
+          const v10 = noise((gx+1)/cols*4, gy/rows*4, t);
+          const v01 = noise(gx/cols*4, (gy+1)/rows*4, t);
+          const v11 = noise((gx+1)/cols*4, (gy+1)/rows*4, t);
+
+          const b = [v00>threshold?1:0, v10>threshold?1:0, v01>threshold?1:0, v11>threshold?1:0];
+          const idx = b[0]*8 + b[1]*4 + b[3]*2 + b[2];
+          if (idx===0||idx===15) continue;
+
+          const lerp = (a,b,va,vb)=>{ const d=vb-va; return d===0?a:a+(b-a)*((threshold-va)/d); };
+          const top    = { x: lerp(x0,x1,v00,v10), y: y0 };
+          const bottom = { x: lerp(x0,x1,v01,v11), y: y1 };
+          const left   = { x: x0, y: lerp(y0,y1,v00,v01) };
+          const right  = { x: x1, y: lerp(y0,y1,v10,v11) };
+
+          const segs = {
+            1:[left,bottom],2:[bottom,right],3:[left,right],
+            4:[right,top],6:[bottom,top],7:[left,top],
+            8:[left,top],9:[bottom,top],11:[right,top],
+            12:[left,right],13:[bottom,right],14:[left,bottom]
+          };
+          const s = segs[idx]||segs[15-idx];
+          if (s) { ctx.moveTo(s[0].x,s[0].y); ctx.lineTo(s[1].x,s[1].y); }
+        }
+      }
+      ctx.stroke();
+    }
+    t += 0.003;
+    requestAnimationFrame(drawTopo);
+  }
+  drawTopo();
+
+  /* ── TOGGLES ── */
+  function toggleImg() {
+    const wrap = document.getElementById('imgReveal');
+    const label = document.getElementById('imgBtnLabel');
+    const aberto = wrap.classList.contains('open');
+    wrap.classList.toggle('open');
+    label.textContent = aberto ? 'Ver Frase' : 'Esconder Frase';
+  }
+
+  function toggleInformacoes() {
+    const div = document.getElementById('informacoes');
+    const label = document.getElementById('btnLabel');
+    const aberto = div.classList.contains('visible');
+
+    if (aberto) {
+      div.classList.remove('visible');
+      setTimeout(() => { div.style.display = 'none'; }, 400);
+      label.textContent = 'Ver Minhas Informações';
+    } else {
+      div.style.display = 'block';
+      requestAnimationFrame(() => div.classList.add('visible'));
+      label.textContent = 'Esconder Informações';
+    }
+  }
+</script>
+
+</body>
+</html>
